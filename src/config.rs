@@ -4,14 +4,14 @@
 *
 * DevDock session configuration and storage
 *
-* ver. 0.2.0
+* ver. 0.3.0
 *************************************************/
 
 use serde::{Deserialize, Serialize};
 use std::{
     env, fs,
     fs::OpenOptions,
-    io::Write,
+    io::{self, Write},
     path::{Path, PathBuf},
     process::Command,
 };
@@ -207,6 +207,92 @@ pub fn edit(name: &str) -> Result<(), String> {
     if !status.success() {
         return Err("Editor exited with an error".into());
     }
+
+    Ok(())
+}
+
+pub fn info(name: &str) -> Result<(), String> {
+    let session = load(name)?;
+
+    println!("DevDock session: {}", session.name);
+    println!("----------------------------------------");
+    println!("Main directory: {}", session.folder.display());
+
+    println!("\nVS Code projects:");
+    if session.vscode.is_empty() {
+        println!("  {}", session.folder.display());
+        println!("  (Default project)");
+    } else {
+        for path in &session.vscode {
+            println!("  {}", path.display());
+        }
+    }
+
+    println!("\nExplorer folders:");
+    for path in &session.folders {
+        println!("  {}", path.display());
+    }
+
+    println!("\nTerminals:");
+    for terminal in &session.terminals {
+        println!(
+            "  {} [{}]",
+            terminal.path.display(),
+            terminal.shell.as_deref().unwrap_or("default")
+        );
+    }
+
+    println!("\nWebsites:");
+    for url in &session.websites {
+        println!("  {url}");
+    }
+
+    println!("\nCustom commands:");
+    for command in &session.commands {
+        println!("  {} {:?}", command.program, command.args);
+
+        if let Some(cwd) = &command.cwd {
+            println!("    Working directory: {}", cwd.display());
+        }
+    }
+
+    println!("\nSummary:");
+    println!("  VS Code: {}", session.vscode.len().max(1));
+    println!("  Folders: {}", session.folders.len());
+    println!("  Terminals: {}", session.terminals.len());
+    println!("  Websites: {}", session.websites.len());
+    println!("  Commands: {}", session.commands.len());
+
+    Ok(())
+}
+
+pub fn remove(name: &str, force: bool) -> Result<(), String> {
+    let path = session_path(name)?;
+
+    if !path.is_file() {
+        return Err(format!("Session '{name}' does not exist"));
+    }
+
+    if !force {
+        print!("Remove session '{name}'? [y/N]: ");
+        io::stdout().flush().map_err(|e| e.to_string())?;
+
+        let mut answer = String::new();
+
+        io::stdin()
+            .read_line(&mut answer)
+            .map_err(|e| e.to_string())?;
+
+        if !answer.trim().eq_ignore_ascii_case("y") {
+            println!("Operation cancelled.");
+            return Ok(());
+        }
+    }
+
+    fs::remove_file(&path).map_err(|e| format!("Cannot remove session: {e}"))?;
+
+    println!("Session '{name}' removed.");
+    println!("Project files were not modified.");
 
     Ok(())
 }

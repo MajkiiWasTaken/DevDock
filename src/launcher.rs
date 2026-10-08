@@ -4,7 +4,7 @@
 *
 * DevDock workspace application launcher
 *
-* ver. 0.2.0
+* ver. 0.3.0
 *************************************************/
 
 use crate::config::{CustomCommand, Session, Terminal};
