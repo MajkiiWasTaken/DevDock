@@ -254,8 +254,6 @@ cargo build --release
 
 **Michal Švrček**
 
-GitHub: [MajkiiWasTaken](https://github.com/MajkiiWasTaken)
-
 ## License
 
 Distributed under the MIT License. See [LICENSE](LICENSE).
