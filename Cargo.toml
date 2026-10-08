@@ -1,6 +1,17 @@
 [package]
-name = "DevDock"
-version = "0.1.0"
+name = "devdock"
+version = "0.2.0"
 edition = "2024"
+authors = ["Michal Švrček"]
+description = "A lightweight, cross-platform CLI tool for managing development workspaces."
+license = "MIT"
+
+[[bin]]
+name = "dock"
+path = "src/main.rs"
 
 [dependencies]
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+toml = "0.9"
+open = "5"
