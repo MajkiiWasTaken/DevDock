@@ -7,6 +7,7 @@
 * ver. 0.3.0
 *************************************************/
 
+use crate::output;
 use serde::{Deserialize, Serialize};
 use std::{
     env, fs,
@@ -121,8 +122,8 @@ pub fn add(name: &str, folder: &Path) -> Result<(), String> {
     file.write_all(content.as_bytes())
         .map_err(|e| e.to_string())?;
 
-    println!("Session '{name}' created.");
-    println!("Configuration: {}", path.display());
+    output::success(&format!("Session '{name}' created"));
+    output::label("Configuration:", &path.display().to_string());
 
     Ok(())
 }
@@ -146,8 +147,11 @@ pub fn load(name: &str) -> Result<Session, String> {
 pub fn list() -> Result<(), String> {
     let dir = config_dir()?;
 
+    output::banner();
+    output::heading("Available project sessions");
+
     if !dir.exists() {
-        println!("No sessions configured yet.");
+        output::warning("No sessions configured yet.");
         return Ok(());
     }
 
@@ -166,14 +170,16 @@ pub fn list() -> Result<(), String> {
     names.sort();
 
     if names.is_empty() {
-        println!("No sessions configured yet.");
-    } else {
-        println!("Available sessions:");
-
-        for name in names {
-            println!("  {name}");
-        }
+        output::warning("No sessions configured yet.");
+        return Ok(());
     }
+
+    for name in &names {
+        output::session(name);
+    }
+
+    println!();
+    output::success(&format!("{} session(s) available", names.len()));
 
     Ok(())
 }
@@ -284,15 +290,15 @@ pub fn remove(name: &str, force: bool) -> Result<(), String> {
             .map_err(|e| e.to_string())?;
 
         if !answer.trim().eq_ignore_ascii_case("y") {
-            println!("Operation cancelled.");
+            output::warning("Operation cancelled.");
             return Ok(());
         }
     }
 
     fs::remove_file(&path).map_err(|e| format!("Cannot remove session: {e}"))?;
 
-    println!("Session '{name}' removed.");
-    println!("Project files were not modified.");
+    output::success(&format!("Session '{name}' removed"));
+    output::info("Project files were not modified.");
 
     Ok(())
 }

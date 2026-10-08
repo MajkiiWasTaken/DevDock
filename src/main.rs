@@ -9,7 +9,9 @@
 
 mod config;
 mod launcher;
+mod output;
 
+use crate::output as out;
 use clap::{Parser, Subcommand};
 use std::{env, path::PathBuf, process};
 
@@ -64,7 +66,8 @@ enum Commands {
 
 fn open_session(name: &str, dry_run: bool) -> Result<(), String> {
     if dry_run {
-        println!("[DRY RUN] No applications will be launched.\n");
+        out::banner();
+        out::warning("DRY RUN: No applications will be launched.");
         return config::info(name);
     }
 
@@ -115,8 +118,9 @@ fn run() -> Result<(), String> {
         }
 
         None => {
-            println!("DevDock - Development workspace manager");
-            println!("Use --help for available commands.");
+            out::banner();
+            out::info("Development workspace manager");
+            out::info("Use --help to see available commands.");
             Ok(())
         }
     }
@@ -124,7 +128,7 @@ fn run() -> Result<(), String> {
 
 fn main() {
     if let Err(error) = run() {
-        eprintln!("Error: {error}");
+        out::error(&error);
         process::exit(1);
     }
 }

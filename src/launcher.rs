@@ -4,7 +4,7 @@
 *
 * DevDock workspace application launcher
 *
-* ver. 0.3.0
+* ver. 0.4.1
 *************************************************/
 
 use crate::config::{CustomCommand, Session, Terminal};
@@ -13,8 +13,12 @@ use std::{
     process::{Command, Stdio},
 };
 
+use crate::output;
+
 pub fn launch(session: &Session) -> Result<(), String> {
-    println!("Launching session: {}", session.name);
+    output::banner();
+    output::heading(&format!("Launching session: {}", session.name));
+    output::step("Opening workspace applications");
 
     let mut errors = Vec::new();
 
@@ -55,11 +59,14 @@ pub fn launch(session: &Session) -> Result<(), String> {
     }
 
     if errors.is_empty() {
-        println!("Session launch completed.");
+        println!();
+        output::success("Session launch completed");
         Ok(())
     } else {
+        println!();
+
         for error in &errors {
-            eprintln!("  [ERROR] {error}");
+            output::error(error);
         }
 
         Err(format!("{} session action(s) failed.", errors.len()))
