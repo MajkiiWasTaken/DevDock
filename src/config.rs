@@ -302,3 +302,45 @@ pub fn remove(name: &str, force: bool) -> Result<(), String> {
 
     Ok(())
 }
+
+pub fn save_session(session: &Session, original_name: Option<&str>) -> Result<(), String> {
+    let name = session.name.trim();
+    let target = session_path(name)?;
+
+    if !session.folder.is_dir() {
+        return Err(format!(
+            "Main directory does not exist: {}",
+            session.folder.display()
+        ));
+    }
+
+    if let Some(original) = original_name {
+        if name != original {
+            return Err("Renaming existing sessions is not supported".into());
+        }
+    } else if target.exists() {
+        return Err(format!(
+            "Session '{name}' already exists. Open it using dock setup {name}"
+        ));
+    }
+
+    let dir = config_dir()?;
+    fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+
+    let data = toml::to_string_pretty(session).map_err(|e| e.to_string())?;
+
+    let temporary = target.with_extension("toml.tmp");
+    fs::write(&temporary, data).map_err(|e| format!("Cannot write temporary file: {e}"))?;
+
+    if target.exists() {
+        let backup = target.with_extension("toml.bak");
+        fs::copy(&target, &backup).map_err(|e| format!("Cannot back up session: {e}"))?;
+
+        // Non-atomic replacement on Windows.
+        fs::remove_file(&target).map_err(|e| format!("Cannot replace session: {e}"))?;
+    }
+
+    fs::rename(&temporary, &target).map_err(|e| format!("Cannot finalize session: {e}"))?;
+
+    Ok(())
+}

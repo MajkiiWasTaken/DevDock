@@ -1,6 +1,6 @@
 [package]
 name = "devdock"
-version = "0.4.1"
+version = "0.5.1"
 edition = "2024"
 authors = ["Michal Švrček"]
 description = "A lightweight, cross-platform CLI tool for managing development workspaces."
@@ -16,3 +16,5 @@ serde = { version = "1", features = ["derive"] }
 toml = "0.9"
 open = "5"
 colored = "3"
+eframe = "0.32"
+rfd = "0.15"

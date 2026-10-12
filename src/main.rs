@@ -8,6 +8,7 @@
 *************************************************/
 
 mod config;
+mod gui;
 mod launcher;
 mod output;
 
@@ -62,6 +63,12 @@ enum Commands {
     /// Launch a session directly by its name
     #[command(external_subcommand)]
     Session(Vec<String>),
+
+    /// Open the graphical session editor
+    Setup {
+        /// Existing session to edit; omit to create a new one
+        name: Option<String>,
+    },
 }
 
 fn open_session(name: &str, dry_run: bool) -> Result<(), String> {
@@ -116,6 +123,8 @@ fn run() -> Result<(), String> {
 
             open_session(name, dry_run)
         }
+
+        Some(Commands::Setup { name }) => gui::open(name.as_deref()),
 
         None => {
             out::banner();
